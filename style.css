@@ -1,6 +1,8 @@
 /* ====================================================== */
-/* ARQUIVO: style.css                                     */
+/* ARQUIVO CSS FINAL - FEAR TRADE                */
 /* ====================================================== */
+
+/* --- 1. VARIÁVEIS GLOBAIS E RESET --- */
 :root {
     --dark-bg: #100000;
     --primary-red: #E50914;
@@ -33,13 +35,18 @@ body {
     text-align: center;
 }
 
-/* --- Estilos de Autenticação (index.html) --- */
+.hidden {
+    display: none !important;
+}
+
+
+/* --- 2. ESTILOS DA PÁGINA DE LOGIN (index.html) --- */
 header .logo {
     max-width: 150px;
     margin-bottom: 1rem;
 }
 
-h1 {
+header h1 {
     font-family: 'Anton', sans-serif;
     font-size: 4rem;
     color: var(--primary-red);
@@ -47,7 +54,7 @@ h1 {
     margin-bottom: 0.5rem;
 }
 
-.subtitle {
+header .subtitle {
     font-size: 1.2rem;
     color: var(--dark-text);
     margin-bottom: 3rem;
@@ -61,7 +68,7 @@ h1 {
     margin: 0 auto;
 }
 
-h2 {
+.form-container h2 {
     font-family: 'Anton', sans-serif;
     margin-bottom: 1.5rem;
     color: var(--light-text);
@@ -96,156 +103,16 @@ button:hover {
     background-color: #f6121d;
 }
 
-button:disabled {
-    background-color: #555;
-    cursor: not-allowed;
-}
-
-.divider {
-    margin: 1.5rem 0;
-    color: var(--dark-text);
-}
-
 #auth-message {
     margin-top: 1rem;
     color: var(--primary-red);
     min-height: 20px;
 }
 
-/* --- Estilos da Aplicação (app.html) --- */
-.hidden {
-    display: none !important;
-}
 
-/* Gravação */
-.recording-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+/* --- 3. ESTILOS DA PÁGINA DA APLICAÇÃO (app.html) --- */
 
-.video-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 640px;
-    margin: 1rem 0;
-    border: 2px solid var(--primary-red);
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #000;
-}
-
-#webcam-preview {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.timer-overlay {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-family: 'Anton', sans-serif;
-    font-size: 2.5rem;
-    color: var(--primary-red);
-    text-shadow: 2px 2px 4px #000;
-}
-
-#start-button {
-    max-width: 300px;
-}
-
-#recording-status {
-    margin-top: 1rem;
-    color: var(--dark-text);
-    min-height: 20px;
-}
-
-/* Dashboard */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #333;
-}
-
-.user-info {
-    font-size: 1.1rem;
-}
-
-#logout-button {
-    width: auto;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-
-.dashboard-content {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    width: 100%;
-}
-
-@media (min-width: 768px) {
-    .dashboard-content {
-        grid-template-columns: 2fr 1fr;
-    }
-}
-
-.chart-container, .videos-list {
-    background-color: var(--container-bg);
-    padding: 1.5rem;
-    border-radius: 8px;
-}
-
-h3 {
-    font-family: 'Anton', sans-serif;
-    color: var(--primary-red);
-    margin-bottom: 1rem;
-    text-align: left;
-}
-
-#video-files-list {
-    list-style: none;
-    text-align: left;
-}
-
-#video-files-list li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #333;
-    font-size: 0.9rem;
-    color: var(--dark-text);
-}
-
-/* --- Estilos da Página da Aplicação (app.html) --- */
-
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0 1rem 1.5rem 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #333;
-}
-
-.user-info {
-    font-size: 1.1rem;
-    color: var(--dark-text);
-}
-
-#logout-button {
-    width: auto;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-/* ================================== */
-/* ATUALIZAÇÃO DE ESTILOS PARA APP.HTML */
-/* ================================== */
-
+/* Cabeçalho da Aplicação */
 .app-header {
     display: flex;
     justify-content: space-between;
@@ -258,16 +125,16 @@ h3 {
 
 .app-title {
     font-family: 'Anton', sans-serif;
-    font-size: 2.5rem; /* Um pouco menor que o da pág. de login para não sobrecarregar */
+    font-size: 2.5rem;
     color: var(--primary-red);
     letter-spacing: 3px;
-    margin: 0; /* Reseta a margem padrão do h1 */
+    margin: 0;
 }
 
 .user-controls {
     display: flex;
     align-items: center;
-    gap: 1rem; /* Cria um espaço entre o e-mail e o botão */
+    gap: 1rem;
 }
 
 #user-email-display {
@@ -279,54 +146,10 @@ h3 {
     width: auto;
     padding: 8px 16px;
     font-size: 0.9rem;
-    margin: 0; /* Reseta margens para garantir alinhamento */
-}
-/* ================================== */
-/* ATUALIZAÇÃO DE CONTROLES DE GRAVAÇÃO */
-/* ================================== */
-
-.controls-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem; /* Espaço entre o timer e o botão */
-    margin-top: 1.5rem;
+    margin: 0;
 }
 
-#progress-timer {
-    font-family: 'Anton', sans-serif;
-    font-size: 2rem;
-    color: var(--dark-text);
-    min-width: 80px; /* Garante que o layout não "pule" */
-    text-align: center;
-}
-
-/* Botão "Começar Experiência" com novo estilo */
-#start-button {
-    max-width: 300px;
-    /* Efeito de brilho (glow) */
-    box-shadow: 0 0 10px 2px rgba(229, 9, 20, 0.5), 
-                0 0 20px 5px rgba(229, 9, 20, 0.3);
-    transition: all 0.3s ease;
-}
-
-#start-button:hover {
-    /* Intensifica o brilho no hover */
-    box-shadow: 0 0 15px 5px rgba(229, 9, 20, 0.7), 
-                0 0 25px 10px rgba(229, 9, 20, 0.4);
-}
-
-/* Estado do botão quando desabilitado (durante a gravação) */
-#start-button:disabled {
-    background-color: #4d1f22; /* Um vermelho bem escuro e "morto" */
-    color: #888;
-    box-shadow: none; /* Remove completamente o brilho */
-    cursor: not-allowed;
-}
-/* ================================== */
-/* ESTILOS PARA O ASSISTENTE DE CALIBRAÇÃO */
-/* ================================== */
-
+/* Assistente de Calibração */
 #calibration-wizard {
     background-color: var(--container-bg);
     padding: 2rem 3rem;
@@ -359,7 +182,6 @@ h3 {
 .glowing-btn {
     box-shadow: 0 0 10px 2px rgba(229, 9, 20, 0.5), 
                 0 0 20px 5px rgba(229, 9, 20, 0.3);
-    transition: all 0.3s ease;
 }
 
 .glowing-btn:hover {
@@ -367,21 +189,46 @@ h3 {
                 0 0 25px 10px rgba(229, 9, 20, 0.4);
 }
 
-/* Barra de informações durante a gravação */
-.live-info-bar {
+/* Seção de Gravação */
+.recording-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 1rem;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    margin-top: 1rem;
+    border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+#webcam-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.live-info-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
     margin-top: 1.5rem;
     font-size: 1.2rem;
     color: var(--dark-text);
 }
 
-#progress-timer {
-    font-family: 'Anton', sans-serif;
-    font-size: 1.5rem;
-    color: var(--light-text);
+.live-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .recording-dot {
@@ -398,33 +245,43 @@ h3 {
     100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
 }
 
-/* AJUSTES NA BARRA DE INFORMAÇÕES E NOVO BOTÃO */
-.live-info-bar {
-    justify-content: space-between; /* Alinha itens nas extremidades */
-    padding: 0 1rem;
+#progress-timer {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.5rem;
+    color: var(--light-text);
 }
 
-.live-status {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+#recording-status {
+    margin-top: 1rem;
+    color: var(--dark-text);
+    min-height: 20px;
 }
 
-#finish-btn {
+/* Botão de Ação Dinâmico */
+#action-btn {
     width: auto;
-    padding: 8px 12px;
+    padding: 8px 16px;
     font-size: 0.8rem;
-    background-color: #555; /* Cor neutra */
     font-weight: normal;
     box-shadow: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-#finish-btn:hover {
+#action-btn.state-recording {
+    background-color: #555;
+    color: #fff;
+}
+
+#action-btn.state-recording:hover {
     background-color: #666;
 }
 
-#finish-btn:disabled {
-    background-color: #222;
-    color: #555;
-    cursor: not-allowed;
+#action-btn.state-ready {
+    background-color: var(--primary-red);
+    color: #fff;
+    font-weight: bold;
+}
+
+#action-btn.state-ready:hover {
+    background-color: #f6121d;
 }
