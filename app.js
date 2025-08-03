@@ -1,21 +1,23 @@
+// ===================================================================
+// ARQUIVO: app.js (Versão Final - Chaves Preenchidas)
+// ===================================================================
+
 // --- 1. CONFIGURAÇÃO DO SUPABASE ---
-const supabaseUrl = 'https://mckpavgreddulcvrlmeg.supabase.co'; // Cole sua URL do Supabase aqui
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWj9343aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg'; // Cole sua chave anon public aqui
+const supabaseUrl = 'https://mckpavgreddulcvrlmeg.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWj9343aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 2. VARIÁVEIS GLOBAIS E SELETORES DO DOM ---
 const loginForm = document.getElementById('login-form');
 const authMessage = document.getElementById('auth-message');
-const recordingSection = document.getElementById('recording-section');
-const dashboardSection = document.getElementById('dashboard-section');
+
+// Elementos da página da App (app.html)
+const userEmailDisplay = document.getElementById('user-email-display');
+const logoutButton = document.getElementById('logout-button');
 const webcamPreview = document.getElementById('webcam-preview');
 const startButton = document.getElementById('start-button');
 const timerDisplay = document.getElementById('timer');
 const recordingStatus = document.getElementById('recording-status');
-const userEmailDisplay = document.getElementById('user-email-display');
-const logoutButton = document.getElementById('logout-button');
-const fearChartCanvas = document.getElementById('fear-index-chart');
-const videoFilesList = document.getElementById('video-files-list');
 
 let mediaRecorder;
 let recordedChunks = [];
@@ -69,15 +71,17 @@ function setupAuthForms() {
 // --- 4. LÓGICA DA APLICAÇÃO (app.html) ---
 
 function initializeApp(user) {
-    if (!recordingSection) return;
-    recordingSection.classList.remove('hidden');
-    setupWebcam();
-    startButton.addEventListener('click', startRecording);
+    if (!document.getElementById('recording-section')) return;
+
+    // Mostra o e-mail do usuário e configura o botão de logout
+    userEmailDisplay.textContent = user.email;
     logoutButton.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
     });
-    userEmailDisplay.textContent = `Usuário: ${user.email}`;
-    setupDashboard();
+
+    // Inicia a webcam e o botão de gravação
+    setupWebcam();
+    startButton.addEventListener('click', startRecording);
 }
 
 async function setupWebcam() {
@@ -125,66 +129,22 @@ async function uploadVideo() {
     const fileName = `${Date.now()}_${sanitizedEmail}.webm`;
 
     const { data, error } = await supabaseClient.storage.from('videos').upload(fileName, videoBlob);
+    
     if (error) {
         console.error("Erro no upload:", error);
         recordingStatus.textContent = `Falha no envio: ${error.message}`;
-        startButton.disabled = false;
+        startButton.disabled = false; // Permite tentar de novo
     } else {
         console.log("Upload bem-sucedido:", data);
-        recordingStatus.textContent = "Gravação enviada com sucesso!";
-        setTimeout(() => {
-            recordingSection.classList.add('hidden');
-            dashboardSection.classList.remove('hidden');
-            updateVideoList();
-        }, 2000);
-    }
-}
-
-async function setupDashboard() {
-    renderMockChart();
-    await updateVideoList();
-}
-
-function renderMockChart() {
-    const ctx = fearChartCanvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['0s', '10s', '20s', '30s', '40s', '50s', '60s'],
-            datasets: [{
-                label: 'Fear Index (Mock)',
-                data: [12, 19, 3, 25, 40, 33, 50],
-                borderColor: 'rgba(229, 9, 20, 1)',
-                backgroundColor: 'rgba(229, 9, 20, 0.2)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
-    });
-}
-
-async function updateVideoList() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    const { data, error } = await supabaseClient.storage.from('videos').list(``, {
-        limit: 100,
-        search: user.email.replace(/[@.]/g, '_'),
-    });
-    if (error) { console.error("Erro ao listar vídeos:", error); return; }
-    videoFilesList.innerHTML = '';
-    if (data.length === 0) {
-        videoFilesList.innerHTML = '<li>Nenhuma gravação encontrada.</li>';
-    } else {
-        data.forEach(file => {
-            const listItem = document.createElement('li');
-            listItem.textContent = file.name;
-            videoFilesList.appendChild(listItem);
-        });
+        recordingStatus.textContent = "Gravação enviada com sucesso! Obrigado por participar.";
+        startButton.textContent = "Gravar Novamente";
+        startButton.disabled = false;
     }
 }
 
 // --- 5. INICIALIZAÇÃO E CONTROLE DE SESSÃO ---
 document.addEventListener('DOMContentLoaded', route);
+
 supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         window.location.replace('index.html');
