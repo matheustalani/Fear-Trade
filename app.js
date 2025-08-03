@@ -9,7 +9,6 @@ const authMessage = document.getElementById('auth-message');
 const userEmailDisplay = document.getElementById('user-email-display');
 const logoutButton = document.getElementById('logout-button');
 
-// Elementos do Wizard e da Gravação
 const calibrationWizard = document.getElementById('calibration-wizard');
 const step1 = document.getElementById('step-1');
 const step2 = document.getElementById('step-2');
@@ -21,9 +20,16 @@ const recordingSection = document.getElementById('recording-section');
 const webcamPreview = document.getElementById('webcam-preview');
 const progressTimer = document.getElementById('progress-timer');
 const recordingStatus = document.getElementById('recording-status');
+const finishBtn = document.getElementById('finish-btn'); // Novo seletor
 
-let timerInterval = null;
-const RECORDING_DURATION_S = 5400; // Grava por 1h e 30m, por exemplo
+let mediaRecorder;
+let sessionTimestamp; 
+let chunkCounter = 0; 
+const CHUNK_DURATION_MS = 30000;
+
+// Variáveis para controlar os timers e parar o processo
+let progressTimerInterval = null;
+let recordingInterval = null;
 
 // --- 3. CONTROLE DE SESSÃO E ROTEAMENTO ---
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -61,7 +67,6 @@ function initializeApp(user) {
     if (userNamePlaceholder) userNamePlaceholder.textContent = user.email.split('@')[0];
     logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
 
-    // Lógica do assistente de calibração
     readyBtn.addEventListener('click', () => {
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
@@ -75,19 +80,65 @@ function initializeApp(user) {
 }
 
 function startExperience() {
-    setupWebcam();
+    sessionTimestamp = Math.floor(Date.now() / 1000);
+    chunkCounter = 0;
+    setupWebcamAndRecording();
     startTimer();
-    // Aqui é onde a análise de IA começaria a rodar sobre o stream da webcam
+    finishBtn.addEventListener('click', finishExperience); // Adiciona o evento ao botão
 }
 
-async function setupWebcam() {
+async function setupWebcamAndRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         webcamPreview.srcObject = stream;
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+        mediaRecorder.ondataavailable = async (event) => {
+            if (event.data.size > 0) {
+                const videoBlob = event.data;
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                const sanitizedEmail = user.email.replace(/[@.]/g, '_');
+                const fileName = `${sessionTimestamp}_${sanitizedEmail}_${chunkCounter}.webm`;
+                chunkCounter++; 
+
+                const { error } = await supabaseClient.storage.from('videos').upload(fileName, videoBlob);
+                if (error) {
+                    console.error(`Falha no upload do trecho ${chunkCounter - 1}:`, error);
+                    recordingStatus.textContent = `Erro no envio do trecho ${chunkCounter - 1}.`;
+                } else {
+                    console.log(`Trecho ${chunkCounter - 1} enviado com sucesso!`);
+                    recordingStatus.textContent = `Análise de reação ativada. (Trecho ${chunkCounter - 1} OK)`;
+                }
+            }
+        };
+
+        mediaRecorder.start();
+        recordingInterval = setInterval(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.requestData();
+            }
+        }, CHUNK_DURATION_MS);
+
     } catch (error) {
         console.error("Erro ao acessar a webcam:", error);
         recordingStatus.textContent = "Erro ao acessar webcam. Verifique as permissões.";
     }
+}
+
+// NOVA FUNÇÃO PARA FINALIZAR A SESSÃO
+function finishExperience() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop(); // Para a gravação (isso vai disparar um último ondataavailable)
+    }
+    
+    // Para os timers
+    clearInterval(recordingInterval);
+    clearInterval(progressTimerInterval);
+
+    // Atualiza a interface
+    recordingStatus.textContent = "Sessão finalizada. Todos os dados foram enviados. Obrigado!";
+    document.querySelector('.live-status').style.display = 'none'; // Esconde o "Gravando..."
+    finishBtn.disabled = true; // Desabilita o botão
 }
 
 function formatTime(seconds) {
@@ -100,14 +151,8 @@ function formatTime(seconds) {
 function startTimer() {
     let elapsedSeconds = 0;
     progressTimer.textContent = formatTime(elapsedSeconds);
-
-    timerInterval = setInterval(() => {
+    progressTimerInterval = setInterval(() => {
         elapsedSeconds++;
         progressTimer.textContent = formatTime(elapsedSeconds);
-
-        if (elapsedSeconds >= RECORDING_DURATION_S) {
-            clearInterval(timerInterval);
-            recordingStatus.textContent = "Sessão encerrada. Obrigado!";
-        }
     }, 1000);
 }
