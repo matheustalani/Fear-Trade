@@ -28,7 +28,7 @@
             </div>
             <div class="wizard-step hidden" id="step-2">
                 <h2>Passo Final: A Sincronização</h2>
-                <p class="highlight">Dê PLAY na Netflix agora. Assim que a PRIMEIRA IMAGEM do episódio aparecer (após resumos ou aberturas), clique IMEDIATAMENTE no botão abaixo.</p>
+                <p class="highlight">Dê PLAY na Netflix agora. Assim que a PRIMEIRA IMAGEM do episódio aparecer, clique IMEDIATAMENTE no botão abaixo.</p>
                 <button id="sync-btn" class="glowing-btn">O EPISÓDIO COMEÇOU!</button>
             </div>
         </main>
@@ -39,8 +39,11 @@
                     <video id="webcam-preview" autoplay muted></video>
                 </div>
                 <div class="live-info-bar">
-                    <span class="recording-dot"></span> Gravando...
+                    <div class="live-status">
+                        <span class="recording-dot"></span> Gravando...
+                    </div>
                     <span id="progress-timer">00:00:00</span>
+                    <button id="finish-btn">Finalizar Sessão</button>
                 </div>
                 <p id="recording-status">Análise de reação em tempo real ativada.</p>
             </div>
