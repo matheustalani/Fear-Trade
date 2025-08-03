@@ -397,3 +397,34 @@ h3 {
     70% { box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); }
     100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
 }
+
+/* AJUSTES NA BARRA DE INFORMAÇÕES E NOVO BOTÃO */
+.live-info-bar {
+    justify-content: space-between; /* Alinha itens nas extremidades */
+    padding: 0 1rem;
+}
+
+.live-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#finish-btn {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    background-color: #555; /* Cor neutra */
+    font-weight: normal;
+    box-shadow: none;
+}
+
+#finish-btn:hover {
+    background-color: #666;
+}
+
+#finish-btn:disabled {
+    background-color: #222;
+    color: #555;
+    cursor: not-allowed;
+}
