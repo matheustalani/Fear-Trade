@@ -19,20 +19,30 @@
             </div>
         </header>
 
-        <main id="recording-section">
+        <main id="calibration-wizard">
+            <div class="wizard-step" id="step-1">
+                <h2>Bem-vindo(a), <span class="user-name-placeholder"></span>!</h2>
+                <p>A experiência vai começar. Abra a Netflix em outra janela e deixe o episódio pronto no início.</p>
+                <p>Clique abaixo quando estiver a postos.</p>
+                <button id="ready-btn">Estou Pronto</button>
+            </div>
+            <div class="wizard-step hidden" id="step-2">
+                <h2>Passo Final: A Sincronização</h2>
+                <p class="highlight">Dê PLAY na Netflix agora. Assim que a PRIMEIRA IMAGEM do episódio aparecer (após resumos ou aberturas), clique IMEDIATAMENTE no botão abaixo.</p>
+                <button id="sync-btn" class="glowing-btn">O EPISÓDIO COMEÇOU!</button>
+            </div>
+        </main>
+
+        <main id="recording-section" class="hidden">
             <div class="recording-container">
-                <h2>Prepare-se</h2>
-                <p>A experiência vai começar. Deixe suas emoções fluírem.</p>
                 <div class="video-wrapper">
                     <video id="webcam-preview" autoplay muted></video>
                 </div>
-                
-                <div class="controls-container">
-                    <span id="progress-timer">00:00</span>
-                    <button id="start-button">Começar Experiência</button>
+                <div class="live-info-bar">
+                    <span class="recording-dot"></span> Gravando...
+                    <span id="progress-timer">00:00:00</span>
                 </div>
-
-                <p id="recording-status"></p>
+                <p id="recording-status">Análise de reação em tempo real ativada.</p>
             </div>
         </main>
     </div>
