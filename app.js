@@ -8,15 +8,22 @@ const loginForm = document.getElementById('login-form');
 const authMessage = document.getElementById('auth-message');
 const userEmailDisplay = document.getElementById('user-email-display');
 const logoutButton = document.getElementById('logout-button');
+
+// Elementos do Wizard e da Gravação
+const calibrationWizard = document.getElementById('calibration-wizard');
+const step1 = document.getElementById('step-1');
+const step2 = document.getElementById('step-2');
+const readyBtn = document.getElementById('ready-btn');
+const syncBtn = document.getElementById('sync-btn');
+const userNamePlaceholder = document.querySelector('.user-name-placeholder');
+
+const recordingSection = document.getElementById('recording-section');
 const webcamPreview = document.getElementById('webcam-preview');
-const startButton = document.getElementById('start-button');
-const progressTimer = document.getElementById('progress-timer'); // Novo seletor do timer
+const progressTimer = document.getElementById('progress-timer');
 const recordingStatus = document.getElementById('recording-status');
 
-let mediaRecorder;
-let recordedChunks = [];
-let timerInterval = null; // Variável para controlar o intervalo do timer
-const RECORDING_DURATION_S = 10;
+let timerInterval = null;
+const RECORDING_DURATION_S = 5400; // Grava por 1h e 30m, por exemplo
 
 // --- 3. CONTROLE DE SESSÃO E ROTEAMENTO ---
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -31,7 +38,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     }
 });
 
-// --- 4. FUNÇÕES AUXILIARES ---
+// --- 4. FUNÇÕES ---
 function setupAuthForms() {
     if (!loginForm) return;
     loginForm.addEventListener('submit', async (e) => {
@@ -41,54 +48,56 @@ function setupAuthForms() {
         authMessage.textContent = '';
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
-            authMessage.textContent = error.message === 'Invalid login credentials' ? 'E-mail ou senha inválidos. Tente novamente.' : `Erro: ${error.message}`;
+            authMessage.textContent = error.message === 'Invalid login credentials' ? 'E-mail ou senha inválidos.' : `Erro: ${error.message}`;
         }
     });
 }
 
 function initializeApp(user) {
-    if (!document.getElementById('recording-section')) return;
+    if (!calibrationWizard) return;
     if (userEmailDisplay.textContent === user.email) return;
+
     userEmailDisplay.textContent = user.email;
+    if (userNamePlaceholder) userNamePlaceholder.textContent = user.email.split('@')[0];
     logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
+
+    // Lógica do assistente de calibração
+    readyBtn.addEventListener('click', () => {
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+    });
+
+    syncBtn.addEventListener('click', () => {
+        calibrationWizard.classList.add('hidden');
+        recordingSection.classList.remove('hidden');
+        startExperience();
+    });
+}
+
+function startExperience() {
     setupWebcam();
-    startButton.addEventListener('click', startRecording);
+    startTimer();
+    // Aqui é onde a análise de IA começaria a rodar sobre o stream da webcam
 }
 
 async function setupWebcam() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         webcamPreview.srcObject = stream;
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.push(event.data);
-        };
-        mediaRecorder.onstop = uploadVideo;
     } catch (error) {
         console.error("Erro ao acessar a webcam:", error);
         recordingStatus.textContent = "Erro ao acessar webcam. Verifique as permissões.";
     }
 }
 
-// Função para formatar o tempo em MM:SS
 function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
 }
 
-function startRecording() {
-    if (!mediaRecorder) {
-        recordingStatus.textContent = "Câmera não está pronta.";
-        return;
-    }
-    
-    recordedChunks = [];
-    mediaRecorder.start();
-    
-    startButton.disabled = true;
-    recordingStatus.textContent = "Gravando...";
-    
+function startTimer() {
     let elapsedSeconds = 0;
     progressTimer.textContent = formatTime(elapsedSeconds);
 
@@ -98,31 +107,7 @@ function startRecording() {
 
         if (elapsedSeconds >= RECORDING_DURATION_S) {
             clearInterval(timerInterval);
-            if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-            }
+            recordingStatus.textContent = "Sessão encerrada. Obrigado!";
         }
     }, 1000);
-}
-
-async function uploadVideo() {
-    recordingStatus.textContent = "Processando e enviando...";
-    const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    const sanitizedEmail = user.email.replace(/[@.]/g, '_');
-    const fileName = `${Date.now()}_${sanitizedEmail}.webm`;
-
-    const { data, error } = await supabaseClient.storage.from('videos').upload(fileName, videoBlob);
-    
-    if (error) {
-        console.error("Erro no upload:", error);
-        recordingStatus.textContent = `Falha no envio: ${error.message}`;
-        startButton.disabled = false;
-    } else {
-        console.log("Upload bem-sucedido:", data);
-        recordingStatus.textContent = "Gravação enviada com sucesso! Obrigado por participar.";
-        startButton.textContent = "Gravar Novamente";
-        startButton.disabled = false;
-        progressTimer.textContent = "00:00"; // Reseta o timer para o próximo uso
-    }
 }
