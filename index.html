@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fear Trade | Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://logodownload.org/wp-content/uploads/2014/09/pringles-logo-0.png" alt="Pringles Logo" class="logo">
+            <h1>FEAR TRADE</h1>
+            <p class="subtitle">Seu medo vale desconto.</p>
+        </header>
+
+        <main id="auth-section">
+            <div class="form-container">
+                <form id="login-form">
+                    <h2>Login</h2>
+                    <input type="email" id="login-email" placeholder="E-mail" required>
+                    <input type="password" id="login-password" placeholder="Senha" required>
+                    <button type="submit">Entrar</button>
+                </form>
+
+                <div class="divider">ou</div>
+
+                <form id="signup-form">
+                    <h2>Cadastre-se</h2>
+                    <input type="email" id="signup-email" placeholder="E-mail" required>
+                    <input type="password" id="signup-password" placeholder="Crie uma senha" required>
+                    <button type="submit">Criar Conta</button>
+                </form>
+            </div>
+            <p id="auth-message"></p>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
