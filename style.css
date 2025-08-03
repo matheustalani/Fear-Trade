@@ -242,3 +242,42 @@ h3 {
     padding: 8px 16px;
     font-size: 0.9rem;
 }
+/* ================================== */
+/* ATUALIZAÇÃO DE ESTILOS PARA APP.HTML */
+/* ================================== */
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.app-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 2.5rem; /* Um pouco menor que o da pág. de login para não sobrecarregar */
+    color: var(--primary-red);
+    letter-spacing: 3px;
+    margin: 0; /* Reseta a margem padrão do h1 */
+}
+
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Cria um espaço entre o e-mail e o botão */
+}
+
+#user-email-display {
+    font-size: 1rem;
+    color: var(--dark-text);
+}
+
+#logout-button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    margin: 0; /* Reseta margens para garantir alinhamento */
+}
