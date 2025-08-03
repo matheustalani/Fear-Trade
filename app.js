@@ -20,14 +20,13 @@ const recordingSection = document.getElementById('recording-section');
 const webcamPreview = document.getElementById('webcam-preview');
 const progressTimer = document.getElementById('progress-timer');
 const recordingStatus = document.getElementById('recording-status');
-const finishBtn = document.getElementById('finish-btn'); // Novo seletor
+const actionBtn = document.getElementById('action-btn'); // Botão dinâmico
 
 let mediaRecorder;
 let sessionTimestamp; 
 let chunkCounter = 0; 
 const CHUNK_DURATION_MS = 30000;
 
-// Variáveis para controlar os timers e parar o processo
 let progressTimerInterval = null;
 let recordingInterval = null;
 
@@ -80,11 +79,16 @@ function initializeApp(user) {
 }
 
 function startExperience() {
+    // Configura o estado inicial para uma nova gravação
     sessionTimestamp = Math.floor(Date.now() / 1000);
     chunkCounter = 0;
+    document.querySelector('.live-status').style.display = 'flex';
+    actionBtn.textContent = "Finalizar Sessão";
+    actionBtn.className = 'state-recording';
+    actionBtn.onclick = finishExperience; // Define a ação do botão
+
     setupWebcamAndRecording();
     startTimer();
-    finishBtn.addEventListener('click', finishExperience); // Adiciona o evento ao botão
 }
 
 async function setupWebcamAndRecording() {
@@ -125,20 +129,22 @@ async function setupWebcamAndRecording() {
     }
 }
 
-// NOVA FUNÇÃO PARA FINALIZAR A SESSÃO
 function finishExperience() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop(); // Para a gravação (isso vai disparar um último ondataavailable)
     }
     
-    // Para os timers
     clearInterval(recordingInterval);
     clearInterval(progressTimerInterval);
 
-    // Atualiza a interface
-    recordingStatus.textContent = "Sessão finalizada. Todos os dados foram enviados. Obrigado!";
-    document.querySelector('.live-status').style.display = 'none'; // Esconde o "Gravando..."
-    finishBtn.disabled = true; // Desabilita o botão
+    // Reseta a interface para o estado de "pronto para começar de novo"
+    recordingStatus.textContent = "Sessão finalizada. Clique para começar uma nova gravação.";
+    document.querySelector('.live-status').style.display = 'none';
+    progressTimer.textContent = "00:00:00"; // Zera o timer
+    
+    actionBtn.textContent = "Começar de Novo";
+    actionBtn.className = 'state-ready';
+    actionBtn.onclick = startExperience; // Muda a ação do botão para começar de novo
 }
 
 function formatTime(seconds) {
