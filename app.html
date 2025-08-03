@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fear Trade | A Experiência</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <main id="recording-section" class="hidden">
+            <div class="recording-container">
+                <h2>Prepare-se</h2>
+                <p>Assista ao vídeo e deixe suas emoções fluírem.</p>
+                <div class="video-wrapper">
+                    <video id="webcam-preview" autoplay muted></video>
+                    <div id="timer" class="timer-overlay"></div>
+                </div>
+                <button id="start-button">Iniciar Experiência</button>
+                <p id="recording-status"></p>
+            </div>
+        </main>
+
+        <main id="dashboard-section" class="hidden">
+            <header class="dashboard-header">
+                <div class="user-info">
+                    <span id="user-email-display"></span>
+                </div>
+                <button id="logout-button">Sair</button>
+            </header>
+            
+            <div class="dashboard-content">
+                <div class="chart-container">
+                    <h3>Fear Index</h3>
+                    <canvas id="fear-index-chart"></canvas>
+                </div>
+                <div class="videos-list">
+                    <h3>Minhas Gravações</h3>
+                    <ul id="video-files-list">
+                        <li>Aguardando gravações...</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
