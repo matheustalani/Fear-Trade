@@ -1,5 +1,5 @@
 // ===================================================================
-// ARQUIVO: app.js (Versão Final - Chaves Preenchidas)
+// ARQUIVO: app.js (Versão com correção de loop de refresh)
 // ===================================================================
 
 // --- 1. CONFIGURAÇÃO DO SUPABASE ---
@@ -10,8 +10,6 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 // --- 2. VARIÁVEIS GLOBAIS E SELETORES DO DOM ---
 const loginForm = document.getElementById('login-form');
 const authMessage = document.getElementById('auth-message');
-
-// Elementos da página da App (app.html)
 const userEmailDisplay = document.getElementById('user-email-display');
 const logoutButton = document.getElementById('logout-button');
 const webcamPreview = document.getElementById('webcam-preview');
@@ -23,28 +21,34 @@ let mediaRecorder;
 let recordedChunks = [];
 const RECORDING_DURATION_S = 10;
 
-// --- 3. LÓGICA DE ROTEAMENTO E AUTENTICAÇÃO ---
+// --- 3. CONTROLE DE SESSÃO E ROTEAMENTO (LÓGICA CENTRAL) ---
 
-async function route() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+supabaseClient.auth.onAuthStateChange((event, session) => {
     const onAuthPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/');
     const onAppPage = window.location.pathname.endsWith('app.html');
 
-    if (!session && onAppPage) {
-        window.location.replace('index.html');
-        return;
+    if (session) {
+        // Se existe uma sessão (usuário logado)
+        if (onAuthPage) {
+            // E ele está na página de login, redireciona para a app
+            window.location.replace('app.html');
+        } else if (onAppPage) {
+            // E ele está na página do app, inicializa a página
+            initializeApp(session.user);
+        }
+    } else {
+        // Se NÃO existe uma sessão (usuário deslogado)
+        if (onAppPage) {
+            // E ele está na página do app, redireciona para o login
+            window.location.replace('index.html');
+        } else if (onAuthPage) {
+            // E ele está na página de login, prepara os formulários
+            setupAuthForms();
+        }
     }
-    if (session && onAuthPage) {
-        window.location.replace('app.html');
-        return;
-    }
-    if (session && onAppPage) {
-        initializeApp(session.user);
-    }
-    if (!session && onAuthPage) {
-        setupAuthForms();
-    }
-}
+});
+
+// --- 4. FUNÇÕES AUXILIARES ---
 
 function setupAuthForms() {
     if (!loginForm) return;
@@ -53,11 +57,8 @@ function setupAuthForms() {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        
         authMessage.textContent = '';
-
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        
         if (error) {
             if (error.message === 'Invalid login credentials') {
                 authMessage.textContent = 'E-mail ou senha inválidos. Tente novamente.';
@@ -68,18 +69,16 @@ function setupAuthForms() {
     });
 }
 
-// --- 4. LÓGICA DA APLICAÇÃO (app.html) ---
-
 function initializeApp(user) {
     if (!document.getElementById('recording-section')) return;
+    
+    // Evita reinicializar a página se ela já estiver carregada
+    if (userEmailDisplay.textContent === user.email) return;
 
-    // Mostra o e-mail do usuário e configura o botão de logout
     userEmailDisplay.textContent = user.email;
     logoutButton.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
     });
-
-    // Inicia a webcam e o botão de gravação
     setupWebcam();
     startButton.addEventListener('click', startRecording);
 }
@@ -133,7 +132,7 @@ async function uploadVideo() {
     if (error) {
         console.error("Erro no upload:", error);
         recordingStatus.textContent = `Falha no envio: ${error.message}`;
-        startButton.disabled = false; // Permite tentar de novo
+        startButton.disabled = false;
     } else {
         console.log("Upload bem-sucedido:", data);
         recordingStatus.textContent = "Gravação enviada com sucesso! Obrigado por participar.";
@@ -141,14 +140,3 @@ async function uploadVideo() {
         startButton.disabled = false;
     }
 }
-
-// --- 5. INICIALIZAÇÃO E CONTROLE DE SESSÃO ---
-document.addEventListener('DOMContentLoaded', route);
-
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        window.location.replace('index.html');
-    } else if (event === 'SIGNED_IN') {
-        window.location.replace('app.html');
-    }
-});
