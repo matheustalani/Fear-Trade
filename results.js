@@ -1,6 +1,6 @@
 // --- 1. CONFIGURAÇÃO DO SUPABASE ---
 const supabaseUrl = 'https://mckpavgreddulcvrlmeg.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWjj343aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWj9343aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 2. SELETORES DO DOM ---
@@ -14,16 +14,19 @@ let fearChart = null; // Variável para guardar nosso gráfico
 
 // --- 3. LÓGICA DA PÁGINA ---
 document.addEventListener('DOMContentLoaded', async () => {
+    // Verifica se o usuário está logado
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
         window.location.replace('index.html');
         return;
     }
     
+    // Mostra informações do usuário e configura botões
     userEmailDisplay.textContent = session.user.email;
     logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
     backToAppBtn.addEventListener('click', () => window.location.href = 'app.html');
     
+    // Pega o timestamp da sessão a partir da URL
     const urlParams = new URLSearchParams(window.location.search);
     const sessionTimestamp = urlParams.get('session');
     
@@ -41,6 +44,7 @@ async function carregarDados(timestamp, userEmail) {
     const sanitizedEmail = userEmail.replace(/[@.]/g, '_');
     const fileNamePrefix = `${timestamp}_${sanitizedEmail}_`;
 
+    // Busca todos os vídeos concluídos para esta sessão
     const { data: videos, error } = await supabaseClient
         .from('analise_videos')
         .select('*')
@@ -54,6 +58,7 @@ async function carregarDados(timestamp, userEmail) {
 
     if (!videos || videos.length === 0) {
         timelineContainer.innerHTML = `<p>Nenhum resultado de análise encontrado ainda. O processamento pode levar alguns minutos. A página será atualizada automaticamente.</p>`;
+        // Recarregar automaticamente a cada 30 segundos
         setTimeout(() => window.location.reload(), 30000);
         return;
     }
@@ -162,8 +167,10 @@ const generateThumbnail = (videoUrl, callback) => {
     });
 
     video.addEventListener('seeked', () => {
-        canvas.width = video.videoWidth / 4; // Reduz o tamanho para performance
-        canvas.height = video.videoHeight / 4;
+        // Reduz o tamanho do canvas para performance
+        const scale = 0.25;
+        canvas.width = video.videoWidth * scale;
+        canvas.height = video.videoHeight * scale;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         callback(canvas.toDataURL());
     });
@@ -185,6 +192,8 @@ const createCustomTooltip = (context) => {
         tooltipEl.style.transform = 'translate(-50%, -120%)';
         tooltipEl.style.transition = 'all .1s ease';
         tooltipEl.style.padding = '10px';
+        tooltipEl.style.width = '180px';
+        tooltipEl.style.textAlign = 'center';
         tooltipEl.style.border = '1px solid #E50914';
         chart.canvas.parentNode.appendChild(tooltipEl);
     }
@@ -200,7 +209,7 @@ const createCustomTooltip = (context) => {
     const videoUrl = chart.meta.videoUrls[pointIndex];
 
     tooltipEl.innerHTML = `
-        <img id="tooltip-thumb" src="" width="160" style="display: block; margin-bottom: 5px;" />
+        <img id="tooltip-thumb" src="" width="160" style="display: block; margin-bottom: 5px; border-radius: 4px;" />
         <div>Índice de Medo: <strong>${fearIndex.toFixed(2)}</strong></div>
     `;
 
