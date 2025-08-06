@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fear Trade | Resultados</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos adicionais para a timeline */
+        #timeline-container {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .timeline-item {
+            background-color: var(--container-bg);
+            border-left: 4px solid var(--primary-red);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .timeline-item h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .timeline-item p {
+            color: var(--dark-text);
+            margin-bottom: 0.25rem;
+        }
+        .timeline-item .emotion-fear {
+            color: var(--primary-red);
+            font-weight: bold;
+        }
+        .timeline-item details {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1 class="app-title">FEAR TRADE</h1>
+            <div class="user-controls">
+                <span id="user-email-display"></span>
+                <button id="logout-button">Sair</button>
+            </div>
+        </header>
+
+        <main>
+            <h2>Resultados da Sessão</h2>
+            <p id="session-info"></p>
+            <div id="timeline-container">
+                <p>Carregando resultados...</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="results.js"></script> </body>
+</html>
