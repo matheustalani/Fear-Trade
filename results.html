@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fear Trade | Resultados</title>
     <link rel="stylesheet" href="style.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -26,12 +28,11 @@
             <h2>Resultados da Sessão</h2>
             <p id="session-info"></p>
             
-            <div id="chart-container">
+            <div id="chart-container" style="height: 350px; margin-top: 2rem; margin-bottom: 2rem;">
                 <canvas id="fear-chart"></canvas>
             </div>
 
             <div id="loader">
-                <div class="spinner"></div>
                 <p id="loader-text">Carregando resultados...</p>
             </div>
 
@@ -40,8 +41,8 @@
                 <div id="timeline-container">
                     </div>
     
-                <div class="bottom-controls">
-                    <a href="app.html" class="button">Gravar Nova Sessão</a>
+                <div class="bottom-controls" style="margin-top: 2rem;">
+                     <a href="app.html" class="button">Gravar Nova Sessão</a>
                 </div>
             </div>
 
