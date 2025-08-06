@@ -25,21 +25,23 @@ const actionBtn = document.getElementById('action-btn'); // Botão dinâmico
 let mediaRecorder;
 let sessionTimestamp; 
 let chunkCounter = 0; 
-const CHUNK_DURATION_MS = 30000;
+const CHUNK_DURATION_MS = 30000; // Grava chunks de 30 segundos
 
 let progressTimerInterval = null;
 let recordingInterval = null;
 
 // --- 3. CONTROLE DE SESSÃO E ROTEAMENTO ---
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    const onAuthPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/');
+    // Detecta em qual página o usuário está
+    const onAuthPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
     const onAppPage = window.location.pathname.endsWith('app.html');
-    if (session) {
-        if (onAuthPage) window.location.replace('app.html');
-        else if (onAppPage) initializeApp(session.user);
-    } else {
-        if (onAppPage) window.location.replace('index.html');
-        else if (onAuthPage) setupAuthForms();
+    
+    if (session) { // Se o usuário está logado
+        if (onAuthPage) window.location.replace('app.html'); // Se estiver na pág de login, vai para o app
+        else if (onAppPage) initializeApp(session.user); // Se já estiver no app, inicializa
+    } else { // Se o usuário NÃO está logado
+        if (onAppPage) window.location.replace('index.html'); // Se estiver no app, volta para o login
+        else if (onAuthPage) setupAuthForms(); // Se estiver na pág de login, prepara o formulário
     }
 });
 
@@ -60,18 +62,19 @@ function setupAuthForms() {
 
 function initializeApp(user) {
     if (!calibrationWizard) return;
-    if (userEmailDisplay.textContent === user.email) return;
+    // Evita reinicializar a página desnecessariamente
+    if (userEmailDisplay && userEmailDisplay.textContent === user.email) return;
 
-    userEmailDisplay.textContent = user.email;
+    if (userEmailDisplay) userEmailDisplay.textContent = user.email;
     if (userNamePlaceholder) userNamePlaceholder.textContent = user.email.split('@')[0];
-    logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
+    if (logoutButton) logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
 
-    readyBtn.addEventListener('click', () => {
+    if (readyBtn) readyBtn.addEventListener('click', () => {
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
     });
 
-    syncBtn.addEventListener('click', () => {
+    if (syncBtn) syncBtn.addEventListener('click', () => {
         calibrationWizard.classList.add('hidden');
         recordingSection.classList.remove('hidden');
         startExperience();
@@ -80,12 +83,16 @@ function initializeApp(user) {
 
 function startExperience() {
     // Configura o estado inicial para uma nova gravação
-    sessionTimestamp = Math.floor(Date.now() / 1000);
+    sessionTimestamp = Math.floor(Date.now() / 1000); // Timestamp em segundos
     chunkCounter = 0;
-    document.querySelector('.live-status').style.display = 'flex';
-    actionBtn.textContent = "Finalizar Sessão";
-    actionBtn.className = 'state-recording';
-    actionBtn.onclick = finishExperience; // Define a ação do botão
+    if (document.querySelector('.live-status')) {
+        document.querySelector('.live-status').style.display = 'flex';
+    }
+    if (actionBtn) {
+        actionBtn.textContent = "Finalizar Sessão";
+        actionBtn.className = 'state-recording';
+        actionBtn.onclick = finishExperience; // Define a ação do botão
+    }
 
     setupWebcamAndRecording();
     startTimer();
@@ -102,16 +109,17 @@ async function setupWebcamAndRecording() {
                 const videoBlob = event.data;
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 const sanitizedEmail = user.email.replace(/[@.]/g, '_');
-                const fileName = `${sessionTimestamp}_${sanitizedEmail}_${chunkCounter}.webm`;
+                // Nomenclatura corrigida para ordenação
+                const fileName = `${sessionTimestamp}_${sanitizedEmail}_${String(chunkCounter).padStart(4, '0')}.webm`;
                 chunkCounter++; 
 
                 const { error } = await supabaseClient.storage.from('videos').upload(fileName, videoBlob);
                 if (error) {
                     console.error(`Falha no upload do trecho ${chunkCounter - 1}:`, error);
-                    recordingStatus.textContent = `Erro no envio do trecho ${chunkCounter - 1}.`;
+                    if(recordingStatus) recordingStatus.textContent = `Erro no envio do trecho ${chunkCounter - 1}.`;
                 } else {
                     console.log(`Trecho ${chunkCounter - 1} enviado com sucesso!`);
-                    recordingStatus.textContent = `Análise de reação ativada. (Trecho ${chunkCounter - 1} OK)`;
+                    if(recordingStatus) recordingStatus.textContent = `Análise de reação ativada. (Trecho ${chunkCounter - 1} OK)`;
                 }
             }
         };
@@ -125,7 +133,7 @@ async function setupWebcamAndRecording() {
 
     } catch (error) {
         console.error("Erro ao acessar a webcam:", error);
-        recordingStatus.textContent = "Erro ao acessar webcam. Verifique as permissões.";
+        if(recordingStatus) recordingStatus.textContent = "Erro ao acessar webcam. Verifique as permissões.";
     }
 }
 
@@ -134,17 +142,29 @@ function finishExperience() {
         mediaRecorder.stop(); // Para a gravação (isso vai disparar um último ondataavailable)
     }
     
-    clearInterval(recordingInterval);
-    clearInterval(progressTimerInterval);
+    if (recordingInterval) clearInterval(recordingInterval);
+    if (progressTimerInterval) clearInterval(progressTimerInterval);
 
-    // Reseta a interface para o estado de "pronto para começar de novo"
-    recordingStatus.textContent = "Sessão finalizada. Clique para começar uma nova gravação.";
-    document.querySelector('.live-status').style.display = 'none';
-    progressTimer.textContent = "00:00:00"; // Zera o timer
+    // Reseta a interface
+    if (recordingStatus) recordingStatus.textContent = "Sessão finalizada. Gerando relatório de resultados...";
+    if (document.querySelector('.live-status')) {
+        document.querySelector('.live-status').style.display = 'none';
+    }
+    if (progressTimer) progressTimer.textContent = "00:00:00";
     
-    actionBtn.textContent = "Começar de Novo";
-    actionBtn.className = 'state-ready';
-    actionBtn.onclick = startExperience; // Muda a ação do botão para começar de novo
+    if (actionBtn) {
+        actionBtn.textContent = "Começar de Novo";
+        actionBtn.className = 'state-ready';
+        actionBtn.onclick = startExperience;
+    }
+    
+    // ===============================================
+    //  **AQUI ESTÁ A ALTERAÇÃO QUE VOCÊ PEDIU**
+    // ===============================================
+    // Aguarda um pouco para o último chunk ser enviado e redireciona para a página de resultados
+    setTimeout(() => {
+        window.location.href = `results.html?session=${sessionTimestamp}`;
+    }, 3000); // Espera 3 segundos
 }
 
 function formatTime(seconds) {
@@ -156,9 +176,14 @@ function formatTime(seconds) {
 
 function startTimer() {
     let elapsedSeconds = 0;
-    progressTimer.textContent = formatTime(elapsedSeconds);
+    if (progressTimer) progressTimer.textContent = formatTime(elapsedSeconds);
     progressTimerInterval = setInterval(() => {
         elapsedSeconds++;
-        progressTimer.textContent = formatTime(elapsedSeconds);
+        if (progressTimer) progressTimer.textContent = formatTime(elapsedSeconds);
     }, 1000);
+}
+
+// Garante que a função de setup dos formulários seja chamada na página de login
+if(window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+    setupAuthForms();
 }
