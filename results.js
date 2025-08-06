@@ -1,6 +1,6 @@
 // --- 1. CONFIGURAÇÃO DO SUPABASE ---
 const supabaseUrl = 'https://mckpavgreddulcvrlmeg.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWj9343aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja3BhdmdyZWRkdWxjdnJsbWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNzM4NDYsImV4cCI6MjA2OTc0OTg0Nn0.lAdWj-j43aJVy5H6No6yV13Fihqlp0g_ucBTQc3ToWg';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 2. SELETORES DO DOM ---
@@ -15,7 +15,7 @@ const resultsContent = document.getElementById('results-content');
 const modalBackdrop = document.getElementById('modal-backdrop');
 const modalCloseBtn = document.getElementById('modal-close-btn');
 let fearChart = null; 
-let allVideoData = []; // Para guardar os dados dos vídeos
+let allVideoData = []; 
 
 // --- 3. LÓGICA DA PÁGINA ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -31,6 +31,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     modalBackdrop.addEventListener('click', (event) => {
         if (event.target === modalBackdrop) hideModal();
     });
+    
+    // Move o botão para o final do main
+    const mainElement = document.querySelector('main');
+    const bottomControls = document.querySelector('.bottom-controls');
+    if (mainElement && bottomControls) {
+        mainElement.appendChild(bottomControls);
+    }
+    const backButton = document.querySelector('.bottom-controls .button');
+    if(backButton) {
+        backButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = 'app.html';
+        });
+    }
+    
     
     const urlParams = new URLSearchParams(window.location.search);
     const sessionTimestamp = urlParams.get('session');
@@ -69,7 +84,7 @@ async function carregarDados(timestamp, userEmail) {
         return;
     }
     
-    allVideoData = videos; // Salva os dados globalmente
+    allVideoData = videos;
     loader.classList.add('hidden');
     resultsContent.classList.remove('hidden');
 
@@ -86,22 +101,16 @@ function construirTimeline(videos) {
         const fearClass = video.fear_index > 0 ? 'emotion-fear' : '';
         const statusMessage = video.status !== 'concluido' ? `(Status: ${video.status})` : '';
 
-        // Corrigido o bug do <details> não funcionar após a primeira vez
         videoElement.innerHTML = `
             <h3>Trecho ${index + 1} ${statusMessage}</h3>
             <p><strong>Arquivo:</strong> ${video.nome_arquivo}</p>
             <p><strong>Emoção:</strong> <span class="${fearClass}">${video.resultado_emocao}</span></p>
             <p><strong>Índice de Medo:</strong> ${video.fear_index}</p>
+            <details>
+                <summary>Ver processo de análise do modelo</summary>
+                <p>${video.processo_analise || 'N/A'}</p>
+            </details>
         `;
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = 'Ver processo de análise do modelo';
-        const detailsContent = document.createElement('p');
-        detailsContent.textContent = video.processo_analise || 'N/A';
-        details.appendChild(summary);
-        details.appendChild(detailsContent);
-        videoElement.appendChild(details);
-
         timelineContainer.appendChild(videoElement);
     });
 }
@@ -127,12 +136,13 @@ function construirGrafico(videos) {
                 fill: true,
                 tension: 0.4,
                 pointRadius: 6,
-                pointBackgroundColor: 'var(--dark-bg)', // Fundo da bolinha
-                pointBorderColor: '#E50914',       // Contorno da bolinha
+                pointBackgroundColor: 'var(--dark-bg)', 
+                pointBorderColor: '#E50914',
                 pointBorderWidth: 2,
-                pointHoverRadius: 10,
-                pointHoverBackgroundColor: '#E50914', // Bolinha preenchida no hover
-                pointHoverBorderColor: 'white'
+                // --- EFEITOS DE HOVER AJUSTADOS ---
+                pointHoverRadius: 6, // Não aumenta o tamanho
+                pointHoverBackgroundColor: '#E50914', // Preenche com vermelho
+                pointHoverBorderColor: '#E50914'   // Borda da mesma cor (sem outline branco)
             }]
         },
         options: {
@@ -143,17 +153,36 @@ function construirGrafico(videos) {
                     beginAtZero: true, 
                     max: 1.2, 
                     ticks: { color: '#a0a0a0' },
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' } // Linhas de grade cinza
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' } 
                 },
                 x: { 
                     ticks: { color: '#a0a0a0' },
-                    grid: { display: false } // Sem linhas de grade verticais
+                    grid: { display: false }
                 }
             },
             plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false } // Desabilitamos completamente o tooltip
+                // --- TOOLTIP DE HOVER ATIVADO ---
+                tooltip: {
+                    enabled: true, // Habilita o tooltip padrão do Chart.js
+                    backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                    titleColor: '#f5f5f5',
+                    bodyColor: '#f5f5f5',
+                    borderColor: '#E50914',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false, // Não mostra o quadradinho de cor
+                    callbacks: {
+                        // Customiza o texto do tooltip
+                        label: function(context) {
+                            const fearIndex = context.raw;
+                            const emotion = allVideoData[context.dataIndex].resultado_emocao;
+                            return `Emoção: ${emotion} | Índice: ${fearIndex.toFixed(2)}`;
+                        }
+                    }
+                },
+                legend: { display: false }
             },
+            // --- POPUP COMPLETO NO CLIQUE ---
             onClick: (event, elements) => {
                 if (elements.length > 0) {
                     const pointIndex = elements[0].index;
@@ -164,28 +193,24 @@ function construirGrafico(videos) {
     });
 }
 
-// --- LÓGICA DO POPUP/MODAL ---
+// --- LÓGICA DO POPUP (MODAL) ---
 function showModalForPoint(index) {
     const videoData = allVideoData[index];
     if (!videoData) return;
 
-    // Preenche o conteúdo do modal
     document.getElementById('modal-title').textContent = `Detalhes do Trecho ${index + 1}`;
     document.getElementById('modal-emotion').textContent = videoData.resultado_emocao;
     document.getElementById('modal-fear-index').textContent = videoData.fear_index.toFixed(2);
     document.getElementById('modal-description').textContent = videoData.processo_analise || 'N/A';
     
-    // Mostra um placeholder para a thumbnail enquanto carrega
     const thumbnailImg = document.getElementById('modal-thumbnail');
-    thumbnailImg.src = ""; // Limpa a imagem anterior
+    thumbnailImg.src = ""; 
 
-    // Pega a URL e gera a thumbnail
     const { data } = supabaseClient.storage.from('videos').getPublicUrl(videoData.nome_arquivo);
     generateThumbnail(data.publicUrl, (thumbnailDataUrl) => {
         thumbnailImg.src = thumbnailDataUrl;
     });
 
-    // Mostra o modal
     modalBackdrop.classList.remove('hidden');
 }
 
@@ -193,7 +218,7 @@ function hideModal() {
     modalBackdrop.classList.add('hidden');
 }
 
-const thumbnailCache = {}; // Cache para as thumbnails
+const thumbnailCache = {};
 const generateThumbnail = (videoUrl, callback) => {
     if (thumbnailCache[videoUrl]) {
         callback(thumbnailCache[videoUrl]);
