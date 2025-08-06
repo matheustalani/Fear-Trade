@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fear Trade | Resultados</title>
     <link rel="stylesheet" href="style.css">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="chartjs-tooltip" style="opacity: 0;"></div>
-
     <div class="container">
         <header class="app-header">
             <h1 class="app-title">FEAR TRADE</h1>
@@ -28,25 +24,37 @@
             <h2>Resultados da Sessão</h2>
             <p id="session-info"></p>
             
-            <div id="chart-container" style="height: 350px; margin-top: 2rem; margin-bottom: 2rem;">
+            <div id="chart-container">
                 <canvas id="fear-chart"></canvas>
             </div>
 
             <div id="loader">
+                <div class="spinner"></div>
                 <p id="loader-text">Carregando resultados...</p>
             </div>
 
             <div id="results-content" class="hidden">
                 <h2>Linha do Tempo Detalhada</h2>
-                <div id="timeline-container">
-                    </div>
-    
-                <div class="bottom-controls" style="margin-top: 2rem;">
-                     <a href="app.html" class="button">Gravar Nova Sessão</a>
+                <div id="timeline-container"></div>
+                <div class="bottom-controls">
+                    <a href="app.html" class="button">Gravar Nova Sessão</a>
                 </div>
             </div>
-
         </main>
+    </div>
+
+    <div id="modal-backdrop" class="hidden">
+        <div id="modal-content">
+            <button id="modal-close-btn">&times;</button>
+            <h3 id="modal-title">Detalhes do Trecho</h3>
+            <img id="modal-thumbnail" src="" alt="Thumbnail do vídeo">
+            <div id="modal-details">
+                <p><strong>Emoção:</strong> <span id="modal-emotion"></span></p>
+                <p><strong>Índice de Medo:</strong> <span id="modal-fear-index"></span></p>
+            </div>
+            <h4>Análise do Modelo:</h4>
+            <p id="modal-description"></p>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
