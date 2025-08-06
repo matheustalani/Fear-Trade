@@ -9,34 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Estilos adicionais para a timeline e o gráfico */
-        #chart-container {
-            margin-top: 2.5rem;
-            margin-bottom: 2.5rem;
-            background-color: var(--container-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-        }
-        #timeline-container {
-            margin-top: 2rem;
-            text-align: left;
-        }
-        .timeline-item {
-            background-color: var(--container-bg);
-            border-left: 4px solid var(--primary-red);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            border-radius: 0 8px 8px 0;
-        }
-        .timeline-item h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-        .timeline-item p { color: var(--dark-text); margin-bottom: 0.25rem; }
-        .timeline-item .emotion-fear { color: var(--primary-red); font-weight: bold; }
-        .timeline-item details { margin-top: 1rem; font-size: 0.9rem; }
-        .back-button { margin-left: 1rem; }
-    </style>
 </head>
 <body>
+    <div id="chartjs-tooltip" style="opacity: 0;"></div>
+
     <div class="container">
         <header class="app-header">
             <h1 class="app-title">FEAR TRADE</h1>
@@ -49,19 +25,30 @@
         <main>
             <h2>Resultados da Sessão</h2>
             <p id="session-info"></p>
-            <button id="back-to-app-btn" class="back-button">Gravar Nova Sessão</button>
             
             <div id="chart-container">
                 <canvas id="fear-chart"></canvas>
             </div>
 
-            <h2>Linha do Tempo Detalhada</h2>
-            <div id="timeline-container">
-                <p>Carregando resultados...</p>
+            <div id="loader">
+                <div class="spinner"></div>
+                <p id="loader-text">Carregando resultados...</p>
             </div>
+
+            <div id="results-content" class="hidden">
+                <h2>Linha do Tempo Detalhada</h2>
+                <div id="timeline-container">
+                    </div>
+    
+                <div class="bottom-controls">
+                    <a href="app.html" class="button">Gravar Nova Sessão</a>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="results.js"></script> </body>
+    <script src="results.js"></script>
+</body>
 </html>
