@@ -1,5 +1,5 @@
 /* ====================================================== */
-/* ARQUIVO CSS FINAL - FEAR TRADE (VERSÃO 2.0)     */
+/* ARQUIVO CSS FINAL - FEAR TRADE                */
 /* ====================================================== */
 
 /* --- 1. VARIÁVEIS GLOBAIS E RESET --- */
@@ -7,9 +7,8 @@
     --dark-bg: #100000;
     --primary-red: #E50914;
     --light-text: #f5f5f5;
-    --dark-text: #a0a0a0;
-    --container-bg: #181818;
-    --container-border: #282828;
+    --dark-text: #808080;
+    --container-bg: #141414;
 }
 
 * {
@@ -24,15 +23,15 @@ body {
     color: var(--light-text);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Alinha no topo */
+    align-items: center;
     min-height: 100vh;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    font-size: 16px;
 }
 
 .container {
     width: 90%;
-    max-width: 900px;
+    max-width: 800px;
+    padding: 2rem;
     text-align: center;
 }
 
@@ -40,15 +39,88 @@ body {
     display: none !important;
 }
 
-/* --- 2. ESTILOS GERAIS (HEADER, BOTÕES, ETC) --- */
+
+/* --- 2. ESTILOS DA PÁGINA DE LOGIN (index.html) --- */
+header .logo {
+    max-width: 150px;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 4rem;
+    color: var(--primary-red);
+    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
+}
+
+header .subtitle {
+    font-size: 1.2rem;
+    color: var(--dark-text);
+    margin-bottom: 3rem;
+}
+
+.form-container {
+    background-color: var(--container-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-container h2 {
+    font-family: 'Anton', sans-serif;
+    margin-bottom: 1.5rem;
+    color: var(--light-text);
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1rem;
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: var(--light-text);
+    font-size: 1rem;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-red);
+    border: none;
+    border-radius: 4px;
+    color: var(--light-text);
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #f6121d;
+}
+
+#auth-message {
+    margin-top: 1rem;
+    color: var(--primary-red);
+    min-height: 20px;
+}
+
+
+/* --- 3. ESTILOS DA PÁGINA DA APLICAÇÃO (app.html) --- */
+
+/* Cabeçalho da Aplicação */
 .app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     padding-bottom: 1.5rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--container-border);
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
 }
 
 .app-title {
@@ -70,69 +142,146 @@ body {
     color: var(--dark-text);
 }
 
-button, .button { /* Adicionada classe .button para links com estilo de botão */
-    padding: 10px 20px;
-    background-color: var(--primary-red);
-    border: none;
-    border-radius: 4px;
-    color: var(--light-text);
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-}
-
-button:hover, .button:hover {
-    background-color: #f6121d;
-}
-
 #logout-button {
     width: auto;
     padding: 8px 16px;
     font-size: 0.9rem;
+    margin: 0;
 }
 
-/* --- 3. ESTILOS DA PÁGINA DE RESULTADOS --- */
-main h2 {
-    font-family: 'Anton', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 1px;
-    margin-bottom: 0.5rem;
+/* Assistente de Calibração */
+#calibration-wizard {
+    background-color: var(--container-bg);
+    padding: 2rem 3rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 2rem;
 }
 
-main > p { /* Estilo para o parágrafo de info da sessão */
-    color: var(--dark-text);
-    margin-bottom: 2rem;
-}
-
-/* Efeito de Carregamento (Spinner) */
-#loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3rem;
-    flex-direction: column;
-}
-
-.spinner {
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-left-color: var(--primary-red);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
+.wizard-step h2 {
     margin-bottom: 1rem;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.wizard-step p {
+    font-size: 1.1rem;
+    color: var(--dark-text);
+    line-height: 1.6;
+    margin-bottom: 2rem;
 }
 
-/* Gráfico */
-#chart-container {
-    height: 350px;
-    margin-top: 2.5rem;
-    margin-bottom: 2.5rem;
-    background-
+.wizard-step .highlight {
+    color: var(--light-text);
+    font-weight: bold;
+}
+
+.wizard-step button {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.glowing-btn {
+    box-shadow: 0 0 10px 2px rgba(229, 9, 20, 0.5), 
+                0 0 20px 5px rgba(229, 9, 20, 0.3);
+}
+
+.glowing-btn:hover {
+    box-shadow: 0 0 15px 5px rgba(229, 9, 20, 0.7), 
+                0 0 25px 10px rgba(229, 9, 20, 0.4);
+}
+
+/* Seção de Gravação */
+.recording-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    margin-top: 1rem;
+    border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+#webcam-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.live-info-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--dark-text);
+}
+
+.live-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recording-dot {
+    width: 12px;
+    height: 12px;
+    background-color: var(--primary-red);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+}
+
+#progress-timer {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.5rem;
+    color: var(--light-text);
+}
+
+#recording-status {
+    margin-top: 1rem;
+    color: var(--dark-text);
+    min-height: 20px;
+}
+
+/* Botão de Ação Dinâmico */
+#action-btn {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: normal;
+    box-shadow: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#action-btn.state-recording {
+    background-color: #555;
+    color: #fff;
+}
+
+#action-btn.state-recording:hover {
+    background-color: #666;
+}
+
+#action-btn.state-ready {
+    background-color: var(--primary-red);
+    color: #fff;
+    font-weight: bold;
+}
+
+#action-btn.state-ready:hover {
+    background-color: #f6121d;
+}
