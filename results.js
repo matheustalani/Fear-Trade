@@ -12,7 +12,10 @@ const chartCanvas = document.getElementById('fear-chart');
 const loader = document.getElementById('loader');
 const loaderText = document.getElementById('loader-text');
 const resultsContent = document.getElementById('results-content');
+const modalBackdrop = document.getElementById('modal-backdrop');
+const modalCloseBtn = document.getElementById('modal-close-btn');
 let fearChart = null; 
+let allVideoData = []; // Para guardar os dados dos vídeos
 
 // --- 3. LÓGICA DA PÁGINA ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -24,6 +27,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     userEmailDisplay.textContent = session.user.email;
     logoutButton.addEventListener('click', () => supabaseClient.auth.signOut());
+    modalCloseBtn.addEventListener('click', hideModal);
+    modalBackdrop.addEventListener('click', (event) => {
+        if (event.target === modalBackdrop) hideModal();
+    });
     
     const urlParams = new URLSearchParams(window.location.search);
     const sessionTimestamp = urlParams.get('session');
@@ -54,21 +61,20 @@ async function carregarDados(timestamp, userEmail) {
         return;
     }
 
-    // Verifica se todos os vídeos encontrados já foram processados
     const todosProcessados = videos.every(v => v.status === 'concluido' || v.status === 'erro');
 
     if (!videos || videos.length === 0 || !todosProcessados) {
         loaderText.textContent = `Análise em andamento. A página será atualizada automaticamente...`;
-        setTimeout(() => window.location.reload(), 20000); // Tenta de novo em 20s
+        setTimeout(() => window.location.reload(), 20000);
         return;
     }
     
-    // Esconde o loader e mostra o conteúdo
+    allVideoData = videos; // Salva os dados globalmente
     loader.classList.add('hidden');
     resultsContent.classList.remove('hidden');
 
-    construirTimeline(videos);
-    construirGrafico(videos);
+    construirTimeline(allVideoData);
+    construirGrafico(allVideoData);
 }
 
 function construirTimeline(videos) {
@@ -80,16 +86,22 @@ function construirTimeline(videos) {
         const fearClass = video.fear_index > 0 ? 'emotion-fear' : '';
         const statusMessage = video.status !== 'concluido' ? `(Status: ${video.status})` : '';
 
+        // Corrigido o bug do <details> não funcionar após a primeira vez
         videoElement.innerHTML = `
             <h3>Trecho ${index + 1} ${statusMessage}</h3>
             <p><strong>Arquivo:</strong> ${video.nome_arquivo}</p>
             <p><strong>Emoção:</strong> <span class="${fearClass}">${video.resultado_emocao}</span></p>
             <p><strong>Índice de Medo:</strong> ${video.fear_index}</p>
-            <details>
-                <summary>Ver processo de análise do modelo</summary>
-                <p>${video.processo_analise || 'N/A'}</p>
-            </details>
         `;
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = 'Ver processo de análise do modelo';
+        const detailsContent = document.createElement('p');
+        detailsContent.textContent = video.processo_analise || 'N/A';
+        details.appendChild(summary);
+        details.appendChild(detailsContent);
+        videoElement.appendChild(details);
+
         timelineContainer.appendChild(videoElement);
     });
 }
@@ -97,12 +109,7 @@ function construirTimeline(videos) {
 function construirGrafico(videos) {
     const labels = videos.map((v, i) => `Trecho ${i + 1}`);
     const fearData = videos.map(v => v.fear_index);
-    const analysisData = videos.map(v => v.processo_analise);
-    const videoUrls = videos.map(v => {
-        const { data } = supabaseClient.storage.from('videos').getPublicUrl(v.nome_arquivo);
-        return data.publicUrl;
-    });
-
+    
     if (fearChart) {
         fearChart.destroy();
     }
@@ -120,8 +127,8 @@ function construirGrafico(videos) {
                 fill: true,
                 tension: 0.4,
                 pointRadius: 6,
-                pointBackgroundColor: 'white',
-                pointBorderColor: '#E50914',
+                pointBackgroundColor: 'var(--dark-bg)', // Fundo da bolinha
+                pointBorderColor: '#E50914',       // Contorno da bolinha
                 pointBorderWidth: 2,
                 pointHoverRadius: 10,
                 pointHoverBackgroundColor: '#E50914', // Bolinha preenchida no hover
@@ -132,81 +139,59 @@ function construirGrafico(videos) {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, max: 1.2, ticks: { color: '#a0a0a0' } },
-                x: { ticks: { color: '#a0a0a0' } }
+                y: { 
+                    beginAtZero: true, 
+                    max: 1.2, 
+                    ticks: { color: '#a0a0a0' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' } // Linhas de grade cinza
+                },
+                x: { 
+                    ticks: { color: '#a0a0a0' },
+                    grid: { display: false } // Sem linhas de grade verticais
+                }
             },
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    enabled: false,
-                    external: createCustomTooltip
-                }
+                tooltip: { enabled: false } // Desabilitamos completamente o tooltip
             },
-            // Armazena dados extras para o tooltip
-            meta: {
-                videoUrls: videoUrls,
-                analysisData: analysisData
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const pointIndex = elements[0].index;
+                    showModalForPoint(pointIndex);
+                }
             }
         }
     });
 }
 
-// --- LÓGICA DO TOOLTIP CUSTOMIZADO COM THUMBNAIL ---
-const getOrCreateTooltip = (chart) => {
-    let tooltipEl = chart.canvas.parentNode.querySelector('div#chartjs-tooltip');
-    if (!tooltipEl) {
-        tooltipEl = document.createElement('div');
-        tooltipEl.id = 'chartjs-tooltip';
-        tooltipEl.style.opacity = 0;
-        tooltipEl.style.pointerEvents = 'none';
-        tooltipEl.style.position = 'absolute';
-        tooltipEl.style.transition = 'all .2s ease';
-        chart.canvas.parentNode.appendChild(tooltipEl);
-    }
-    return tooltipEl;
-};
+// --- LÓGICA DO POPUP/MODAL ---
+function showModalForPoint(index) {
+    const videoData = allVideoData[index];
+    if (!videoData) return;
 
-const createCustomTooltip = (context) => {
-    const { chart, tooltip } = context;
-    const tooltipEl = getOrCreateTooltip(chart);
+    // Preenche o conteúdo do modal
+    document.getElementById('modal-title').textContent = `Detalhes do Trecho ${index + 1}`;
+    document.getElementById('modal-emotion').textContent = videoData.resultado_emocao;
+    document.getElementById('modal-fear-index').textContent = videoData.fear_index.toFixed(2);
+    document.getElementById('modal-description').textContent = videoData.processo_analise || 'N/A';
+    
+    // Mostra um placeholder para a thumbnail enquanto carrega
+    const thumbnailImg = document.getElementById('modal-thumbnail');
+    thumbnailImg.src = ""; // Limpa a imagem anterior
 
-    if (tooltip.opacity === 0) {
-        tooltipEl.style.opacity = 0;
-        return;
-    }
-
-    const pointIndex = tooltip.dataPoints[0].dataIndex;
-    const fearIndex = tooltip.dataPoints[0].raw;
-    const videoUrl = chart.meta.videoUrls[pointIndex];
-    const analysisText = chart.meta.analysisData[pointIndex];
-    // Limita o texto da descrição para não ficar gigante
-    const shortAnalysis = analysisText.length > 150 ? analysisText.substring(0, 150) + '...' : analysisText;
-
-    tooltipEl.innerHTML = `
-        <div class="tooltip-title">${tooltip.title[0]}</div>
-        <img id="tooltip-thumb-${pointIndex}" src="" style="width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 4px; background: #333;" />
-        <table>
-            <tr>
-                <td>Índice de Medo:</td>
-                <td>${fearIndex.toFixed(2)}</td>
-            </tr>
-        </table>
-        <div class="tooltip-desc">${shortAnalysis}</div>
-    `;
-
-    generateThumbnail(videoUrl, (thumbnailDataUrl) => {
-        const thumbImg = document.getElementById(`tooltip-thumb-${pointIndex}`);
-        if (thumbImg) {
-            thumbImg.src = thumbnailDataUrl;
-        }
+    // Pega a URL e gera a thumbnail
+    const { data } = supabaseClient.storage.from('videos').getPublicUrl(videoData.nome_arquivo);
+    generateThumbnail(data.publicUrl, (thumbnailDataUrl) => {
+        thumbnailImg.src = thumbnailDataUrl;
     });
 
-    const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-    tooltipEl.style.opacity = 1;
-    tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-    tooltipEl.style.top = positionY + tooltip.caretY + 'px';
-    tooltipEl.style.transform = 'translate(-50%, -115%)';
-};
+    // Mostra o modal
+    modalBackdrop.classList.remove('hidden');
+}
+
+function hideModal() {
+    modalBackdrop.classList.add('hidden');
+}
 
 const thumbnailCache = {}; // Cache para as thumbnails
 const generateThumbnail = (videoUrl, callback) => {
@@ -214,29 +199,22 @@ const generateThumbnail = (videoUrl, callback) => {
         callback(thumbnailCache[videoUrl]);
         return;
     }
-
     const video = document.createElement('video');
     video.crossOrigin = "anonymous";
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-
     video.src = videoUrl;
     video.load();
-
     const onSeeked = () => {
-        const scale = 0.3;
+        const scale = 0.5;
         canvas.width = video.videoWidth * scale;
         canvas.height = video.videoHeight * scale;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL();
-        thumbnailCache[videoUrl] = dataUrl; // Salva no cache
+        thumbnailCache[videoUrl] = dataUrl;
         callback(dataUrl);
-        video.removeEventListener('seeked', onSeeked); // Limpa o listener
+        video.removeEventListener('seeked', onSeeked);
     };
-
-    video.addEventListener('loadeddata', () => {
-        video.currentTime = 1; // Pega o frame 1s
-    });
-
+    video.addEventListener('loadeddata', () => { video.currentTime = 1; });
     video.addEventListener('seeked', onSeeked);
 };
